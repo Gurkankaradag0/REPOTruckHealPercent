@@ -28,6 +28,12 @@ namespace TruckHealPercent.Patches
             }
             if ((bool)IsLocalField.GetValue(__instance))
             {
+                // @kossnikita add sync host
+                if (!TruckHealPercent.HealPercent.HasValue)
+                {
+                    // Mod heal disabled by the host. Let's do it vanilla style.
+                    return true;
+                }
                 int value = TruckHealPercent.HealPercent.Value;
                 object text = PlayerNameField.GetValue(__instance);
                 int percentHealth = Mathf.RoundToInt(__instance.playerHealth.maxHealth * (value / 100f));

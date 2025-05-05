@@ -3,12 +3,13 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using System;
+using TruckHealPercent.Config;
 using TruckHealPercent.Patches;
 using UnityEngine;
 
 namespace TruckHealPercent
 {
-    [BepInPlugin("Ezentere.TruckHealPercent", "Truck Heal Percent", "1.0.0")]
+    [BepInPlugin("Ezentere.TruckHealPercent", "Truck Heal Percent", "2.0.0")]
     public class TruckHealPercent : BaseUnityPlugin
     {
         internal static TruckHealPercent Instance { get; private set; } = null!;
@@ -16,7 +17,9 @@ namespace TruckHealPercent
         private ManualLogSource _logger => base.Logger;
         internal Harmony? Harmony { get; set; }
 
-        public static ConfigEntry<int> HealPercent;
+        public static ConfigManager configManager = null!;
+        public static ConfigEntry<int> ConfigHealPercent = null!;
+        public static int? HealPercent = null!;
 
         private void Awake()
         {
@@ -28,8 +31,9 @@ namespace TruckHealPercent
 
             Patch();
 
-            HealPercent = Config.Bind("General", "PercentAmount", 25, new ConfigDescription("The percentage of health the truck healer restores to the player.", (AcceptableValueBase)(object)new AcceptableValueRange<int>(0, 100), Array.Empty<object>()));
-            Logger.LogInfo($"{Info.Metadata.Name} v{Info.Metadata.Version} is loading with percent amount: {HealPercent.Value}!");
+            ConfigHealPercent = Config.Bind("General", "PercentAmount", 25, new ConfigDescription("The percentage of health the truck healer restores to the player.", (AcceptableValueBase)(object)new AcceptableValueRange<int>(0, 100), Array.Empty<object>()));
+            HealPercent = ConfigHealPercent.Value;
+            Logger.LogInfo($"{Info.Metadata.Name} v{Info.Metadata.Version} is loading with percent amount: {HealPercent}!");
         }
 
         internal void Patch()
@@ -37,6 +41,7 @@ namespace TruckHealPercent
             Harmony ??= new Harmony(Info.Metadata.GUID);
             Harmony.PatchAll();
             Harmony.PatchAll(typeof(PlayerAvatarPatch));
+            Harmony.PatchAll(typeof(NetworkConnectPatch));
         }
 
         internal void Unpatch()
